@@ -22,18 +22,16 @@ arg = getArgument()
 
 img = cv2.imread(arg.image_path)
 
+#hiển thị ảnh
 cv2.imshow('Image',img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
-resized = cv2.resize(img, (28,28), interpolation = cv2.INTER_AREA)
-gray=cv2.cvtColor(resized,cv2.COLOR_BGR2GRAY)
-
-print(gray.shape)
+#resize ảnh về kích cỡ chuẩn 
+resized = cv2.resize(img, (64,64), interpolation = cv2.INTER_AREA)
 
 
 #dự đoán ảnh đó là ảnh gì
-Model(False).predict(gray)
+Model(False).predict(resized)
 
 # end time
 end = time.time()

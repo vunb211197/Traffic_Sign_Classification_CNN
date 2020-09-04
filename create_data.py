@@ -1,22 +1,39 @@
-# file này để tạo data
+# file này đpc và xử lý d
 import numpy as np
-from keras.datasets import mnist
-from keras.utils import np_utils
 import config
+import os
+import pandas as pd
+import cv2
 
-
+data_path = 'GTSRB\\Final_Training\\Images'
+input_size = (64,64)
 
 def get_data():
-    (X_train,y_train),(X_test,y_test)= mnist.load_data()
-    #chia thành 2 tập train data và validation data
-    X_val, y_val = X_train[40000:50000], y_train[40000:50000]
-    X_train, y_train = X_train[:40000], y_train[:40000]
+    #khởi tạo các list để chứa labels và data
+    pixels = []
+    labels = []
+    # lặp các thư mục trong data_path
+    for dir in os.listdir(data_path):
+        #lấy được tên các tệp trong thư mục
+        class_dir = os.path.join(data_path, dir)
+        #đọc file có đuôi csv để xử lý
+        info_file = pd.read_csv(os.path.join(class_dir, 'GT-'+dir+'.csv'),sep=';')
 
-    y_train = np_utils.to_categorical(y_train, config.NUMBERS_CLASS)
-    y_val = np_utils.to_categorical(y_val, config.NUMBERS_CLASS)
-    y_test = np_utils.to_categorical(y_test, config.NUMBERS_CLASS)
 
-    X_train=X_train.reshape(X_train.shape[0], 28, 28, 1)
-    X_val=X_val.reshape(X_val.shape[0], 28, 28, 1)
-    X_test=X_test.reshape(X_test.shape[0], 28, 28, 1)
-    return (X_train,y_train,X_val,y_val,X_test,y_test)
+        #lặp trong file csv 
+        for row in info_file.iterrows():
+            # Đọc ảnh
+            pixel = cv2.imread(os.path.join(class_dir, row[1].Filename))
+            # Trích phần ROI theo thông tin trong file csv
+            pixel = pixel[row[1]['Roi.X1']:row[1]['Roi.X2'], row[1]['Roi.Y1']:row[1]['Roi.Y2'], :]
+
+            # Resize về kích cỡ chuẩn
+            img = cv2.resize(pixel, input_size)
+
+            # Thêm vào list dữ liệu
+            pixels.append(img)
+ 
+            # Thêm nhãn cho ảnh
+            labels.append(row[1].ClassId)
+    #trả về pixels và labels
+    return pixels,labels
